@@ -266,6 +266,8 @@ func parsechainstate(filename string) error {
 func main() {
 	app := cli.NewApp()
 	app.Name = "coper-toolkit"
+	app.Usage = ""
+	app.Description = "personal copernicus toolkit to analyze something, use at your own risk:)"
 	app.Version = "0.1.0"
 
 	app.Commands = []cli.Command{
