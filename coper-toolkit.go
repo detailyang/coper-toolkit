@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/detailyang/go-bcrypto"
 
 	"github.com/copernet/copernicus/model/block"
 	"github.com/copernet/copernicus/model/blockindex"
@@ -14,11 +17,38 @@ import (
 	"github.com/copernet/copernicus/model/undo"
 	"github.com/copernet/copernicus/model/utxo"
 	"github.com/copernet/copernicus/util"
+	"github.com/detailyang/go-bcrypto/secp256k1"
+	. "github.com/detailyang/go-bprimitives"
 	"github.com/detailyang/go-bscript"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/urfave/cli"
 )
+
+func genaddr() error {
+	hash := NewRandomHash()
+	pubkey, ok := secp256k1.PubkeyCreate(hash.Bytes())
+	if !ok {
+		return errors.New("unknow reason")
+	}
+
+	pubkeyEncoded := bcrypto.Base58EncodeCheck(pubkey, 0)
+	wif := bcrypto.Base58EncodeCheck(hash.Bytes(), byte(bcrypto.Mainet))
+	pubekyhash160 := Hash160(pubkey)
+	oopubekyhash160 := append([]byte{0}, pubekyhash160...)
+	cs := DHash256(oopubekyhash160).TakeBytes(0, 4)
+	oopubekyhash160checksum := append(oopubekyhash160, cs...)
+
+	fmt.Printf("private           key:%s\n", wif)
+	fmt.Printf("private key       WIF:%x\n", hash.Bytes())
+	fmt.Printf("public            key:%x\n", pubkey)
+	fmt.Printf("public encoded    key:%x\n", pubkeyEncoded)
+	fmt.Printf("public hash160    key:%x\n", pubekyhash160)
+	fmt.Printf("public hex    address:%x\n", oopubekyhash160checksum)
+	fmt.Printf("public base58 address:%s\n", bcrypto.Base58Encode(oopubekyhash160checksum))
+
+	return nil
+}
 
 func disassemble(hexstring string) error {
 	script, err := bscript.NewScriptFromHexString(hexstring)
@@ -317,6 +347,13 @@ func main() {
 			Action: func(c *cli.Context) error {
 				hexstring := c.Args().First()
 				return disassemble(hexstring)
+			},
+		},
+		{
+			Name:  "genaddr",
+			Usage: "generate public and private key",
+			Action: func(c *cli.Context) error {
+				return genaddr()
 			},
 		},
 	}
