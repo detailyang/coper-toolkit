@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -39,12 +40,12 @@ func genaddr() error {
 	cs := DHash256(oopubekyhash160).TakeBytes(0, 4)
 	oopubekyhash160checksum := append(oopubekyhash160, cs...)
 
-	fmt.Printf("private           key:%s\n", wif)
-	fmt.Printf("private key       WIF:%x\n", hash.Bytes())
-	fmt.Printf("public            key:%x\n", pubkey)
-	fmt.Printf("public encoded    key:%x\n", pubkeyEncoded)
-	fmt.Printf("public hash160    key:%x\n", pubekyhash160)
-	fmt.Printf("public hex    address:%x\n", oopubekyhash160checksum)
+	fmt.Printf("private           key:%s\n", hash.String())
+	fmt.Printf("private key       WIF:%s\n", wif)
+	fmt.Printf("public            key:%s\n", hex.EncodeToString(pubkey))
+	fmt.Printf("public encoded    key:%s\n", pubkeyEncoded)
+	fmt.Printf("public hash160    key:%s\n", hex.EncodeToString(pubekyhash160))
+	fmt.Printf("public hex    address:%s\n", hex.EncodeToString(oopubekyhash160checksum))
 	fmt.Printf("public base58 address:%s\n", bcrypto.Base58Encode(oopubekyhash160checksum))
 
 	return nil
